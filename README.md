@@ -13,7 +13,7 @@ Add the `tidewave` package to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:tidewave, "~> 0.5", only: :dev},
+    {:tidewave, github: "cvkmohan/tidewave_phoenix", only: :dev},
     {:phoenix, ...},
   ]
 end
@@ -120,6 +120,8 @@ The following options are available:
 
 ## Available tools
 
+### Core Tools
+
 - `execute_sql_query` - executes a SQL query within your application
   database, useful for the agent to verify the result of an action
 
@@ -141,7 +143,55 @@ The following options are available:
 - `search_package_docs` - runs a search on https://hexdocs.pm/ filtered to the exact
   dependencies in this project
 
+### Browser Testing Tools
+
+- `smoke_test` - mounts a Phoenix LiveView route inside the BEAM and returns
+  structured verification data. Catches crashes, redirects, missing assigns,
+  undefined functions, and bad queries. Logs are scoped to only show logs
+  generated during this specific mount.
+
+- `eval_with_logs` - evaluates Elixir code and returns both the result and
+  only the logs generated during execution. Logs are scoped with no stale
+  noise from previous runs. Use this instead of `project_eval` + `get_logs`
+  when debugging errors.
+
+- `browser_inspect` - navigates a real headless browser (Lightpanda) to a route
+  and returns structured DOM data. Use this after `smoke_test` passes to verify
+  JavaScript hook execution, console errors, client-side rendering issues, and
+  full DOM structure with source annotations.
+
 `get_ecto_schemas` and `get_ash_resources` is also available if you are using Ecto and Ash respectively.
+
+## Lightpanda Browser (Optional)
+
+This fork includes support for [Lightpanda](https://lightpanda.io/), a lightweight
+headless browser designed for AI and automation. When installed, Tidewave can
+perform real browser testing of your LiveView applications, including JavaScript
+execution verification.
+
+### Installing Lightpanda
+
+**Linux (x86_64):**
+```bash
+curl -L -o lightpanda https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-x86_64-linux && \
+chmod a+x ./lightpanda && \
+sudo mv ./lightpanda /usr/local/bin/
+```
+
+**macOS (Apple Silicon):**
+```bash
+curl -L -o lightpanda https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-aarch64-macos && \
+chmod a+x ./lightpanda && \
+sudo mv ./lightpanda /usr/local/bin/
+```
+
+**Docker:**
+```bash
+docker run -d --name lightpanda -p 9222:9222 lightpanda/browser:nightly
+```
+
+Lightpanda will be automatically detected and started by Tidewave on port 9222.
+The `browser_inspect` tool will only be available when Lightpanda is running.
 
 ## License
 

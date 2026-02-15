@@ -2,6 +2,8 @@
 
 Tidewave is the coding agent for full-stack web app development. Integrate Claude Code, OpenAI Codex, and other agents with your web app and web framework at every layer, from UI to database. [See our website](https://tidewave.ai) for more information.
 
+> **Note:** This is a fork of the original Tidewave project with additional features including browser testing tools powered by Lightpanda.
+
 ## Installing the app
 
 To get started with Tidewave, download our desktop app:
@@ -48,3 +50,66 @@ Once the CLI is installed, run it with `./tidewave`. Run `./tidewave --help` for
 For security reasons, the CLI only allows access from the same machine it is running on by default. Furthermore, it enforces that the CLI is being accessed from `localhost` or `127.0.0.1`. If you want to run the CLI on a custom server, you must pass `--allow-remote-access` and `--allowed-origins=https://HOSTNAME:PORT` respectively to change our defaults. You can also [enable HTTPS certificates](../guides/https.md) both for the App and the CLI.
 
 Both [our App and CLI are open source](https://github.com/tidewave-ai/tidewave_app).
+
+## Optional: Install Lightpanda Browser
+
+This fork includes enhanced browser testing capabilities using [Lightpanda](https://lightpanda.io/), a lightweight headless browser designed for AI and automation. When installed, Tidewave can:
+
+- Execute JavaScript and verify client-side behavior
+- Test Phoenix LiveView hooks and JavaScript interactions
+- Detect console errors during page loads
+- Perform full DOM inspection with source annotations
+
+### Installing Lightpanda
+
+**From Nightly Builds (Recommended):**
+
+*For Linux x86_64:*
+```bash
+curl -L -o lightpanda https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-x86_64-linux && \
+chmod a+x ./lightpanda && \
+sudo mv ./lightpanda /usr/local/bin/
+```
+
+*For macOS (Apple Silicon):*
+```bash
+curl -L -o lightpanda https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-aarch64-macos && \
+chmod a+x ./lightpanda && \
+sudo mv ./lightpanda /usr/local/bin/
+```
+
+*For macOS (Intel):*
+```bash
+curl -L -o lightpanda https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-x86_64-macos && \
+chmod a+x ./lightpanda && \
+sudo mv ./lightpanda /usr/local/bin/
+```
+
+**Using Docker:**
+```bash
+docker run -d --name lightpanda -p 9222:9222 lightpanda/browser:nightly
+```
+
+**Build from Source:**
+See the [Lightpanda GitHub repository](https://github.com/lightpanda-io/browser) for build instructions.
+
+### Verifying Installation
+
+Once installed, verify Lightpanda is working:
+```bash
+lightpanda --version
+```
+
+Tidewave will automatically detect and start Lightpanda on port 9222 when available. The `browser_inspect` tool will only appear in the available tools list when Lightpanda is running.
+
+### Usage
+
+With Lightpanda installed, you have access to three browser testing tools:
+
+1. **`smoke_test`** - Server-side LiveView mount testing (always available)
+2. **`eval_with_logs`** - Code evaluation with scoped log capture (always available)
+3. **`browser_inspect`** - Full browser testing with JavaScript execution (requires Lightpanda)
+
+Use them in sequence:
+1. First run `smoke_test` to verify the page mounts without errors
+2. Then use `browser_inspect` to verify JavaScript hooks and client-side behavior

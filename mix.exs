@@ -1,7 +1,7 @@
 defmodule Tidewave.MixProject do
   use Mix.Project
 
-  @source_url "https://github.com/tidewave-ai/tidewave_phoenix"
+  @source_url "https://github.com/cvkmohan/tidewave_phoenix"
   @homepage_url "https://tidewave.ai/"
   @version "0.5.5"
 
@@ -79,6 +79,7 @@ defmodule Tidewave.MixProject do
         "pages/installation.md",
         "pages/features/accessibility.md",
         "pages/features/agentsmd.md",
+        "pages/features/browser_tools.md",
         "pages/features/inspector.md",
         "pages/features/mermaid.md",
         "pages/features/notifications.md",

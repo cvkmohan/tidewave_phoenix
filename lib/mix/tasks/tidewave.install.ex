@@ -28,7 +28,16 @@ if Code.ensure_loaded?(Igniter) do
 
     @impl Igniter.Mix.Task
     def igniter(igniter) do
-      setup_phoenix(igniter)
+      igniter
+      |> add_dependency()
+      |> setup_phoenix()
+    end
+
+    defp add_dependency(igniter) do
+      Igniter.Project.Deps.add_dep(
+        igniter,
+        {:tidewave, github: "cvkmohan/tidewave_phoenix", only: :dev}
+      )
     end
 
     defp setup_phoenix(igniter) do
