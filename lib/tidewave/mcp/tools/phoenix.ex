@@ -24,7 +24,8 @@ defmodule Tidewave.MCP.Tools.Phoenix do
           properties: %{
             module: %{
               type: "string",
-              description: "The module name (e.g., \"Jason\", \"Phoenix.LiveView\", \"MyApp.Accounts\")"
+              description:
+                "The module name (e.g., \"Jason\", \"Phoenix.LiveView\", \"MyApp.Accounts\")"
             }
           }
         },
@@ -177,57 +178,6 @@ defmodule Tidewave.MCP.Tools.Phoenix do
 
       _ ->
         {:error, "Invalid component reference. Expected Module.function format."}
-    end
-  end
-
-  defp find_source_file(module) do
-    case Code.ensure_loaded(module) do
-      {:module, _} ->
-        case module.module_info(:compile)[:source] do
-          [_ | _] = source ->
-            source_path = List.to_string(source)
-
-            if File.exists?(source_path) do
-              {:ok, source_path}
-            else
-              # Try to find in deps
-              find_source_in_deps(module, source_path)
-            end
-
-          _ ->
-            {:error, "Source not available for #{inspect(module)}"}
-        end
-
-      {:error, _} ->
-        {:error, "Module #{inspect(module)} not found"}
-    end
-  end
-
-  defp find_source_in_deps(module, original_source) do
-    # Extract relative path from original source
-    relative =
-      original_source
-      |> Path.split()
-      |> Enum.reverse()
-      |> Enum.take_while(&(&1 not in ["lib", "src"]))
-      |> Enum.reverse()
-
-    if relative != [] do
-      case :application.get_application(module) do
-        {:ok, app} ->
-          dep_path = Path.join([MCP.root(), "deps", to_string(app), "lib" | relative])
-
-          if File.exists?(dep_path) do
-            {:ok, dep_path}
-          else
-            {:error, "Source file not found at #{dep_path}"}
-          end
-
-        :undefined ->
-          {:error, "Could not determine application for #{inspect(module)}"}
-      end
-    else
-      {:error, "Could not determine source path for #{inspect(module)}"}
     end
   end
 

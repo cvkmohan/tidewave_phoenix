@@ -2,7 +2,7 @@ defmodule SampleAppWeb.UserLive.Index do
   @moduledoc false
   use Phoenix.LiveView
 
-  on_mount {SampleAppWeb.Hooks.Auth, :require_user}
+  on_mount({SampleAppWeb.Hooks.Auth, :require_user})
 
   def mount(_params, _session, socket) do
     {:ok,

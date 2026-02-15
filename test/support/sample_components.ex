@@ -13,11 +13,11 @@ defmodule SampleAppWeb.CoreComponents do
         Are you sure?
       </.modal>
   """
-  attr :id, :string, required: true, doc: "The unique identifier for the modal"
-  attr :show, :boolean, default: false, doc: "Whether to show the modal"
-  attr :on_cancel, JS, default: %JS{}, doc: "JS command to run when modal is cancelled"
+  attr(:id, :string, required: true, doc: "The unique identifier for the modal")
+  attr(:show, :boolean, default: false, doc: "Whether to show the modal")
+  attr(:on_cancel, JS, default: %JS{}, doc: "JS command to run when modal is cancelled")
 
-  slot :inner_block, required: true, doc: "The modal content"
+  slot(:inner_block, required: true, doc: "The modal content")
 
   def modal(assigns) do
     ~H"""
@@ -30,12 +30,17 @@ defmodule SampleAppWeb.CoreComponents do
   @doc """
   Renders a button.
   """
-  attr :type, :string, default: "button", doc: "The button type"
-  attr :variant, :atom, default: :primary, doc: "The button variant: :primary, :secondary, :danger"
-  attr :disabled, :boolean, default: false
-  attr :class, :string, default: nil
+  attr(:type, :string, default: "button", doc: "The button type")
 
-  slot :inner_block, required: true
+  attr(:variant, :atom,
+    default: :primary,
+    doc: "The button variant: :primary, :secondary, :danger"
+  )
+
+  attr(:disabled, :boolean, default: false)
+  attr(:class, :string, default: nil)
+
+  slot(:inner_block, required: true)
 
   def button(assigns) do
     ~H"""
@@ -48,10 +53,10 @@ defmodule SampleAppWeb.CoreComponents do
   @doc """
   Renders an input field.
   """
-  attr :field, Phoenix.HTML.FormField, required: true, doc: "The form field"
-  attr :type, :string, default: "text"
-  attr :label, :string, default: nil
-  attr :placeholder, :string, default: nil
+  attr(:field, Phoenix.HTML.FormField, required: true, doc: "The form field")
+  attr(:type, :string, default: "text")
+  attr(:label, :string, default: nil)
+  attr(:placeholder, :string, default: nil)
 
   def input(assigns) do
     ~H"""
@@ -86,11 +91,11 @@ defmodule SampleAppWeb.Components.UserTable do
   @doc """
   Renders a table of users.
   """
-  attr :users, :list, required: true, doc: "The list of users to display"
-  attr :sortable, :boolean, default: true
-  attr :class, :string, default: nil
+  attr(:users, :list, required: true, doc: "The list of users to display")
+  attr(:sortable, :boolean, default: true)
+  attr(:class, :string, default: nil)
 
-  slot :action, doc: "Action buttons for each row"
+  slot(:action, doc: "Action buttons for each row")
 
   def table(assigns) do
     ~H"""

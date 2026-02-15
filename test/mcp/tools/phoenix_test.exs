@@ -75,7 +75,8 @@ defmodule Tidewave.MCP.Tools.PhoenixTest do
     end
 
     test "returns component info with attrs and slots" do
-      {:ok, text} = Phoenix.get_component_info(%{"component" => "SampleAppWeb.CoreComponents.modal"})
+      {:ok, text} =
+        Phoenix.get_component_info(%{"component" => "SampleAppWeb.CoreComponents.modal"})
 
       # Check header
       assert text =~ "SampleAppWeb.CoreComponents.modal"
@@ -94,7 +95,8 @@ defmodule Tidewave.MCP.Tools.PhoenixTest do
     end
 
     test "returns component info for button with multiple attrs" do
-      {:ok, text} = Phoenix.get_component_info(%{"component" => "SampleAppWeb.CoreComponents.button"})
+      {:ok, text} =
+        Phoenix.get_component_info(%{"component" => "SampleAppWeb.CoreComponents.button"})
 
       assert text =~ "`type`"
       assert text =~ "`variant`"
@@ -103,7 +105,8 @@ defmodule Tidewave.MCP.Tools.PhoenixTest do
     end
 
     test "returns component info for input with form field attr" do
-      {:ok, text} = Phoenix.get_component_info(%{"component" => "SampleAppWeb.CoreComponents.input"})
+      {:ok, text} =
+        Phoenix.get_component_info(%{"component" => "SampleAppWeb.CoreComponents.input"})
 
       assert text =~ "`field`"
       assert text =~ "Phoenix.HTML.FormField"
@@ -111,7 +114,8 @@ defmodule Tidewave.MCP.Tools.PhoenixTest do
     end
 
     test "handles component without attrs gracefully" do
-      {:ok, text} = Phoenix.get_component_info(%{"component" => "SampleAppWeb.ComponentWithoutAttrs.simple"})
+      {:ok, text} =
+        Phoenix.get_component_info(%{"component" => "SampleAppWeb.ComponentWithoutAttrs.simple"})
 
       assert text =~ "SampleAppWeb.ComponentWithoutAttrs.simple"
       assert text =~ "No attributes defined"
