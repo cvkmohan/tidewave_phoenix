@@ -58,6 +58,12 @@ defmodule Tidewave.MixProject do
       # We require v1.6.1 to detect if phoenix live reload is running too early or late
       {:phoenix_live_reload, ">= 1.6.1", optional: true},
 
+      # Code quality and analysis tools (bundled, dev-only analysis — no runtime cost)
+      {:credo, "~> 1.7", runtime: false},
+      {:ex_ast, "~> 0.1", runtime: false},
+      {:phoenix_spec, "~> 0.1", runtime: false},
+      {:quickjs_ex, "~> 0.1"},
+
       # Dev deps
       {:bandit, "~> 1.10", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: :dev},

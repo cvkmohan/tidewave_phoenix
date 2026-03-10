@@ -20,7 +20,13 @@ defmodule Tidewave.MCP.Server do
       Tools.Hex.tools(),
       Tools.Ash.tools(),
       Tools.Phoenix.tools(),
-      Tools.Browser.tools()
+      Tools.Browser.tools(),
+      Tools.Otp.tools(),
+      Tools.Types.tools(),
+      Tools.Xref.tools(),
+      Tools.Ast.tools(),
+      Tools.ApiSpec.tools(),
+      Tools.JsHooks.tools()
     ]
     |> List.flatten()
   end

@@ -160,6 +160,14 @@ The following options are available:
   JavaScript hook execution, console errors, client-side rendering issues, and
   full DOM structure with source annotations.
 
+### Structural Code Tools
+
+- `ast_search` - searches Elixir code by AST shape instead of text. Best for
+  structural patterns where grep would be noisy or imprecise.
+
+- `ast_replace` - performs bounded AST-aware codemods. Use `ast_search` first to
+  preview matches before applying replacements.
+
 `get_ecto_schemas` and `get_ash_resources` is also available if you are using Ecto and Ash respectively.
 
 ## Lightpanda Browser (Optional)

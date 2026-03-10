@@ -47,6 +47,38 @@ find module/function definitions.
 
 You can customize the rule to match your workflow.
 
+If your project uses the AST tools, a useful addendum is:
+
+```txt
+Use `ast_search` for structural Elixir pattern searches when grep would be noisy
+or imprecise.
+
+Always run `ast_search` before `ast_replace`, and use `ast_replace` only for
+bounded refactors with a clearly defined pattern and replacement.
+```
+
+### When to use AST tools
+
+The `ast_search` and `ast_replace` tools are best for structural Elixir work, not
+general exploration.
+
+Good use cases:
+
+* Finding code by shape instead of text, such as `Repo.all(query) |> Enum.filter(_)`
+* Detecting repeated anti-patterns like `IO.inspect(_)`, identity maps, or specific `case` forms
+* Performing bounded codemods where grep/replace would be risky
+* Previewing an edit across many files before applying it
+
+Prefer other tools when:
+
+* You already know the module or function name - use `get_source_location`
+* You need docs or API details - use `get_docs`
+* You are exploring runtime behaviour - use `project_eval`, `get_logs`, or SQL tools
+* A plain text search is enough and structural matching adds no value
+
+In short: use AST tools for shape-aware search and carefully scoped refactors, not
+as the default replacement for grep.
+
 ## Tidewave MCP vs Language Server Protocol tools
 
 Some coding agents expose the [Language Server Protocol (LSP)](https://microsoft.github.io/language-server-protocol/) as tools to the agent. How does Tidewave MCP compare to those?

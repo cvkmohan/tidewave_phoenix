@@ -4,6 +4,8 @@ defmodule Tidewave.MCP.ServerTest do
   import Plug.Conn
   import ExUnit.CaptureLog
 
+  alias Tidewave.MCP.Server
+
   @moduletag :capture_log
 
   describe "handle_message/1" do
@@ -35,7 +37,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Server.handle_http_message(conn)
 
       assert response.status == 200
       response_body = Jason.decode!(response.resp_body)
@@ -52,7 +54,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Server.handle_http_message(conn)
 
       assert response.status == 202
       assert response.resp_body == "{\"status\":\"ok\"}"
@@ -66,7 +68,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Server.handle_http_message(conn)
 
       assert response.status == 202
       assert response.resp_body == "{\"status\":\"ok\"}"
@@ -80,13 +82,20 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Server.handle_http_message(conn)
 
       assert response.status == 200
       response_body = Jason.decode!(response.resp_body)
       assert response_body["jsonrpc"] == "2.0"
       assert response_body["id"] == "2"
       assert is_list(response_body["result"]["tools"])
+
+      tool_names = Enum.map(response_body["result"]["tools"], & &1["name"])
+
+      assert "ast_search" in tool_names
+      assert "ast_replace" in tool_names
+      refute "check_code_quality" in tool_names
+      refute "find_code_clones" in tool_names
     end
 
     test "returns error for invalid JSON-RPC message", %{conn: conn} do
@@ -95,11 +104,11 @@ defmodule Tidewave.MCP.ServerTest do
       log =
         capture_log([level: :warning], fn ->
           conn = %{conn | body_params: message}
-          response = Tidewave.MCP.Server.handle_http_message(conn)
+          response = Server.handle_http_message(conn)
 
           assert response.status == 200
           response_body = Jason.decode!(response.resp_body)
-          assert response_body["error"]["code"] == -32600
+          assert response_body["error"]["code"] == -32_600
           assert response_body["error"]["message"] == "Could not parse message"
         end)
 
@@ -118,7 +127,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Server.handle_http_message(conn)
 
       assert response.status == 200
       response_body = Jason.decode!(response.resp_body)

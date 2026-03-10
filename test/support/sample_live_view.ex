@@ -50,6 +50,8 @@ defmodule SampleAppWeb.UserLive.Index do
   end
 
   defp list_users, do: []
+
+  defp create_user(%{"name" => ""}), do: {:error, %{errors: [name: "can't be blank"]}}
   defp create_user(_params), do: {:ok, %{}}
 end
 

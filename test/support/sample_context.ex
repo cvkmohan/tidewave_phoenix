@@ -69,7 +69,9 @@ defmodule SampleApp.Blog do
   end
 
   def create_post(attrs) do
-    {:ok, attrs}
+    with :ok <- validate_post(attrs) do
+      {:ok, attrs}
+    end
   end
 
   # Private function - should not appear in get_module_functions

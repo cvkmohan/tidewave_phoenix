@@ -70,6 +70,27 @@ tools, and work best with a few powerful ones. With our eval tools, Tidewave
 has the full power of your programming language within the context of your
 project.
 
+## Use AST tools for structural refactors
+
+If your project has `ast_search` and `ast_replace` available, use them when the
+task is about code structure rather than text.
+
+Good examples include:
+
+  * finding all `IO.inspect(_)` calls regardless of formatting
+  * locating patterns such as `Repo.all(query) |> Enum.filter(_)`
+  * replacing a repeated call shape across many files with one bounded codemod
+
+For most everyday navigation, `get_source_location`, `get_docs`, and normal file
+reading are still better choices. AST tools help most when grep would be noisy or
+unsafe.
+
+As a rule of thumb:
+
+  * use `ast_search` first to preview structural matches
+  * use `ast_replace` only after the pattern is specific enough
+  * avoid AST replacement for open-ended edits or exploratory work
+
 ## Plan and think ahead
 
 Different models will require different techniques to produce the best

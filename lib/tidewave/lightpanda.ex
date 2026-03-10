@@ -31,7 +31,8 @@ defmodule Tidewave.Lightpanda do
   end
 
   @impl true
-  def handle_info({_port, {:exit_status, _status}}, %{restarts: n} = state) when n >= @max_restarts do
+  def handle_info({_port, {:exit_status, _status}}, %{restarts: n} = state)
+      when n >= @max_restarts do
     {:stop, :normal, state}
   end
 
