@@ -47,4 +47,30 @@ defmodule Tidewave.AgentTest do
     assert {:ok, component} = Tidewave.Agent.component({Phoenix.Component, :form})
     assert component =~ "Phoenix.Component.form"
   end
+
+  test "frontend helpers expose detected toolchain and checks" do
+    assert {:ok, status} = Tidewave.Agent.frontend_status()
+
+    assert %{
+             root: root,
+             toolchain: toolchain,
+             checks: checks,
+             volt: volt,
+             aliases: aliases,
+             package_json?: package_json?,
+             vite_config?: vite_config?
+           } = status
+
+    assert is_binary(root)
+    assert toolchain in [:volt, :vite, :phoenix_default, :unknown]
+    assert is_list(checks)
+    assert is_map(volt)
+    assert is_map(aliases)
+    assert is_boolean(package_json?)
+    assert is_boolean(vite_config?)
+
+    assert {:ok, check} = Tidewave.Agent.frontend_check()
+    assert %{toolchain: ^toolchain, checks: ^checks, note: note} = check
+    assert note =~ "run: true"
+  end
 end

@@ -130,7 +130,8 @@ Tidewave supports two common tool profiles:
 - `:full` keeps the broad compatibility-oriented tool list documented below.
 - `:minimal` keeps the model-facing surface small. In minimal mode, agents use
   `project_eval` plus the `Tidewave.Agent` helper facade for logs, SQL, docs,
-  source lookup, component information, routes, and other runtime checks.
+  source lookup, component information, routes, frontend status, and other
+  runtime checks.
 
 For example, in `config/dev.exs`:
 
@@ -149,6 +150,8 @@ Tidewave.Agent.docs(Ecto.Changeset)
 Tidewave.Agent.source(MyApp.Context)
 Tidewave.Agent.component({MyAppWeb.CoreComponents, :button})
 Tidewave.Agent.routes()
+Tidewave.Agent.frontend_status()
+Tidewave.Agent.frontend_check()
 ```
 
 ### Core Tools
@@ -168,7 +171,7 @@ Tidewave.Agent.routes()
 - `project_eval` - evaluates code within the your application itself, giving the agent
   access to your runtime, dependencies, and in-memory data. In minimal profile,
   prefer calling `Tidewave.Agent.*` helpers from this tool for logs, SQL, docs,
-  source lookup, components, and route inspection.
+  source lookup, components, route inspection, and frontend build diagnostics.
 
 - `search_package_docs` - runs a search on https://hexdocs.pm/ filtered to the exact
   dependencies in this project

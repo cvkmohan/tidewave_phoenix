@@ -32,6 +32,8 @@ defmodule Tidewave.MCP.Tools.Eval do
         - `Tidewave.Agent.docs(Ecto.Changeset)`
         - `Tidewave.Agent.source(MyApp.Context)`
         - `Tidewave.Agent.component({MyAppWeb.CoreComponents, :button})`
+        - `Tidewave.Agent.frontend_status()`
+        - `Tidewave.Agent.frontend_check()`
         """,
         inputSchema: %{
           type: "object",

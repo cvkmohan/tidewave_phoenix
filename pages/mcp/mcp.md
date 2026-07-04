@@ -66,6 +66,8 @@ Tidewave.Agent.docs(Ecto.Changeset)
 Tidewave.Agent.source(MyApp.Context)
 Tidewave.Agent.component({MyAppWeb.CoreComponents, :button})
 Tidewave.Agent.routes()
+Tidewave.Agent.frontend_status()
+Tidewave.Agent.frontend_check()
 ```
 
 This keeps MCP tool choice simple while preserving the richer runtime operations

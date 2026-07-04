@@ -25,7 +25,8 @@ defmodule Tidewave.MCP.ToolsProfileTest do
     assert "smoke_test" in tool_names
     assert "get_logs" in tool_names
     assert "get_component_info" in tool_names
-    assert "validate_js_hooks" in tool_names
+    refute "validate_js_hooks" in tool_names
+    assert "eval_js" in tool_names
   end
 
   test "minimal profile exposes only eval, smoke test, and AST tools" do
