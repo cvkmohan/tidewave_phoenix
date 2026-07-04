@@ -47,6 +47,30 @@ find module/function definitions.
 
 You can customize the rule to match your workflow.
 
+### Minimal tool profile
+
+If you prefer a small model-facing surface, configure Tidewave with:
+
+```elixir
+config :tidewave, tools_profile: :minimal
+```
+
+Minimal mode exposes only `project_eval`, `smoke_test`, `ast_search`, and
+`ast_replace`. Use `project_eval` as the runtime shell and call the
+`Tidewave.Agent` helper facade for specialized runtime checks:
+
+```elixir
+Tidewave.Agent.logs(tail: 50)
+Tidewave.Agent.sql("select count(*) from users")
+Tidewave.Agent.docs(Ecto.Changeset)
+Tidewave.Agent.source(MyApp.Context)
+Tidewave.Agent.component({MyAppWeb.CoreComponents, :button})
+Tidewave.Agent.routes()
+```
+
+This keeps MCP tool choice simple while preserving the richer runtime operations
+inside normal Elixir code.
+
 If your project uses the AST tools, a useful addendum is:
 
 ```txt

@@ -11,15 +11,15 @@ defmodule Tidewave do
 
   You may also instruct your coding agents to invoke this function whenever necessary.
   For example, you might say: "when debugging, use the `project_eval` tool to run
-  `Tidewave.clear_logs` before executing code, then use `get_logs` to see only fresh
-  output".
+  `Tidewave.clear_logs` before executing code, then use `Tidewave.Agent.logs/1`
+  to see only fresh output".
 
   ## Example
 
       # In project_eval tool:
       Tidewave.clear_logs()
       MyApp.some_function()
-      # Now get_logs will only show logs from some_function()
+      Tidewave.Agent.logs(tail: 50)
 
   """
   def clear_logs do

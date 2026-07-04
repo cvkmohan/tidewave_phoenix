@@ -70,6 +70,25 @@ tools, and work best with a few powerful ones. With our eval tools, Tidewave
 has the full power of your programming language within the context of your
 project.
 
+If you want that smaller surface explicitly, configure:
+
+```elixir
+config :tidewave, tools_profile: :minimal
+```
+
+Minimal mode keeps `project_eval`, `smoke_test`, `ast_search`, and `ast_replace`
+as the model-facing tools. Use `Tidewave.Agent` inside `project_eval` for
+specialized runtime helpers:
+
+```elixir
+Tidewave.Agent.logs(tail: 50)
+Tidewave.Agent.sql("select count(*) from users")
+Tidewave.Agent.docs(Ecto.Changeset)
+Tidewave.Agent.source(MyApp.Context)
+Tidewave.Agent.component({MyAppWeb.CoreComponents, :button})
+Tidewave.Agent.routes()
+```
+
 ## Use AST tools for structural refactors
 
 If your project has `ast_search` and `ast_replace` available, use them when the

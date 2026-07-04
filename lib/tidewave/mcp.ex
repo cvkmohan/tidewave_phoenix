@@ -21,8 +21,7 @@ defmodule Tidewave.MCP do
     children = [
       {Registry, name: MCP.Registry, keys: :unique},
       Tidewave.MCP.Logger,
-      Tidewave.MCP.StandardError,
-      Tidewave.Lightpanda
+      Tidewave.MCP.StandardError
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

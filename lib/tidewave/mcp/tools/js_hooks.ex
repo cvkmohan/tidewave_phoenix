@@ -17,9 +17,9 @@ defmodule Tidewave.MCP.Tools.JsHooks do
           - No JS errors when loading the bundle
 
           Use as a quality gate after modifying JS hooks. Runs inside the BEAM — no browser,
-          no Lightpanda, no Node.js needed.
+          no Node.js needed.
 
-          Verification chain: smoke_test (server) → validate_js_hooks (JS) → browser_inspect (full browser)
+          Verification chain: smoke_test (server) → validate_js_hooks (JS) → agent browser (full browser)
           """,
           inputSchema: %{
             type: "object",

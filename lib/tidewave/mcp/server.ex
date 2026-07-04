@@ -8,6 +8,7 @@ defmodule Tidewave.MCP.Server do
 
   @protocol_version "2025-03-26"
   @vsn Mix.Project.config()[:version]
+  @minimal_tool_names MapSet.new(~w(project_eval smoke_test ast_search ast_replace))
 
   ## Tool management functions
 
@@ -29,6 +30,28 @@ defmodule Tidewave.MCP.Server do
       Tools.JsHooks.tools()
     ]
     |> List.flatten()
+    |> filter_tools(Application.get_env(:tidewave, :tools_profile, :full))
+  end
+
+  defp filter_tools(tools, profile) when profile in [:full, "full", nil], do: tools
+
+  defp filter_tools(tools, profile) when profile in [:minimal, "minimal"] do
+    Enum.filter(tools, &MapSet.member?(@minimal_tool_names, &1.name))
+  end
+
+  defp filter_tools(tools, {:only, tool_names}) when is_list(tool_names) do
+    tool_names = MapSet.new(tool_names, &to_string/1)
+    Enum.filter(tools, &MapSet.member?(tool_names, &1.name))
+  end
+
+  defp filter_tools(tools, {:except, tool_names}) when is_list(tool_names) do
+    tool_names = MapSet.new(tool_names, &to_string/1)
+    Enum.reject(tools, &MapSet.member?(tool_names, &1.name))
+  end
+
+  defp filter_tools(tools, profile) do
+    Logger.warning("Unknown Tidewave tools profile #{inspect(profile)}; using :full")
+    tools
   end
 
   @doc false
@@ -38,7 +61,10 @@ defmodule Tidewave.MCP.Server do
 
     # TODO: switch back to persistent_term when we don't support OTP 27 any more
     # :persistent_term.put({__MODULE__, :tools_and_dispatch}, {tools, dispatch_map})
-    :ets.new(:tidewave_tools, [:set, :named_table, read_concurrency: true])
+    if :ets.whereis(:tidewave_tools) == :undefined do
+      :ets.new(:tidewave_tools, [:set, :named_table, :public, read_concurrency: true])
+    end
+
     :ets.insert(:tidewave_tools, {:tools, {tools, dispatch_map}})
   end
 

@@ -1,20 +1,19 @@
 # Browser Testing Tools
 
-This fork of Tidewave includes enhanced browser testing capabilities for Phoenix LiveView applications. These tools allow you to verify both server-side rendering and client-side JavaScript behavior.
+Tidewave includes BEAM-side verification tools for Phoenix LiveView applications. These tools are intended to complement your agent browser tooling: use Tidewave for runtime-aware server checks and use your browser automation stack for full client-side verification.
 
 ## Overview
 
-Three browser testing tools are available:
+Two browser-related MCP tools are available:
 
-| Tool | Description | Requires Lightpanda |
-|------|-------------|---------------------|
-| `smoke_test` | Server-side LiveView mount testing | No |
-| `eval_with_logs` | Code evaluation with scoped logs | No |
-| `browser_inspect` | Full browser testing with JavaScript | Yes |
+| Tool | Description |
+|------|-------------|
+| `smoke_test` | Server-side LiveView mount testing |
+| `eval_with_logs` | Code evaluation with scoped logs |
 
 ## smoke_test
 
-The `smoke_test` tool mounts a Phoenix LiveView route entirely within the BEAM (Erlang virtual machine) and returns structured verification data. This is the fastest way to verify your LiveView code.
+The `smoke_test` tool mounts a Phoenix LiveView route entirely within the BEAM and returns structured verification data. This is the fastest way to verify that a LiveView route can render without server-side failures.
 
 ### What it catches
 
@@ -22,7 +21,7 @@ The `smoke_test` tool mounts a Phoenix LiveView route entirely within the BEAM (
 - Missing assigns
 - Undefined function errors
 - Bad database queries
-- Redirects (including authentication redirects)
+- Redirects, including authentication redirects
 
 ### Usage
 
@@ -73,84 +72,8 @@ logs_during_operation:
 [error] Something went wrong
 ```
 
-## browser_inspect
-
-The `browser_inspect` tool uses [Lightpanda](https://lightpanda.io/), a lightweight headless browser, to test your application with real JavaScript execution. This tool only appears when Lightpanda is available on port 9222.
-
-### What it verifies
-
-- JavaScript hook execution (`phx-hook`)
-- Console errors
-- Client-side rendering issues
-- LiveView WebSocket connectivity
-- Full DOM structure with source annotations
-
-### Prerequisites
-
-Install Lightpanda first:
-
-**Linux:**
-```bash
-curl -L -o lightpanda https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-x86_64-linux && \
-chmod a+x ./lightpanda && \
-sudo mv ./lightpanda /usr/local/bin/
-```
-
-**macOS:**
-```bash
-curl -L -o lightpanda https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-aarch64-macos && \
-chmod a+x ./lightpanda && \
-sudo mv ./lightpanda /usr/local/bin/
-```
-
-**Docker:**
-```bash
-docker run -d --name lightpanda -p 9222:9222 lightpanda/browser:nightly
-```
-
-### Usage
-
-```json
-{
-  "path": "/dashboard",
-  "user_id": "optional-user-uuid",
-  "wait_ms": 1000
-}
-```
-
-The `wait_ms` parameter controls how long to wait after navigation for JavaScript to settle (default: 1000ms).
-
-### Output
-
-```
-status: ok
-url: http://localhost:4000/dashboard
-lv_connected: true
-element_count: 267
-source_files:
-  - lib/my_app_web/live/dashboard_live.ex:1 (MyAppWeb.DashboardLive.render/1)
-console_errors: none
-interactive_elements:
-  - <button> "Create New" phx-click=create_item
-  - <a> "Settings" href=/settings
-  - <form> "Search" phx-submit=search
-```
-
 ## Recommended Workflow
 
-1. **Start with `smoke_test`** - Verify the page mounts without server-side errors
-2. **Check with `eval_with_logs`** - Debug any issues with scoped logs
-3. **Finish with `browser_inspect`** - Verify JavaScript hooks and client-side behavior
-
-This layered approach gives you fast feedback for server-side issues while still allowing comprehensive browser testing when needed.
-
-## Lightpanda Auto-Start
-
-Tidewave includes a GenServer (`Tidewave.Lightpanda`) that automatically starts Lightpanda when:
-
-- The `lightpanda` binary is found in your PATH
-- Port 9222 is not already in use
-
-If Lightpanda crashes, it will be restarted up to 3 times before giving up. This ensures the browser is available for testing without manual intervention.
-
-To disable auto-start, simply don't install Lightpanda or ensure port 9222 is occupied by another service.
+1. Start with `smoke_test` to verify the route mounts without server-side errors.
+2. Use `eval_with_logs` to debug server-side issues with scoped logs.
+3. Use your agent browser tooling for JavaScript execution, console errors, and client-side interaction checks.

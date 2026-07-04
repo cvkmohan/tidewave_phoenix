@@ -116,9 +116,40 @@ The following options are available:
 
   * `:inspect_opts` - Custom options passed to `Kernel.inspect/2` when formatting some tool results. Defaults to: `[charlists: :as_lists, limit: 50, pretty: true]`
 
+  * `:tools_profile` - Controls which MCP tools are exposed. Defaults to `:full`.
+    Use `:minimal` for an opinionated agent workflow that exposes only
+    `project_eval`, `smoke_test`, `ast_search`, and `ast_replace`. You can also
+    pass `{:only, tool_names}` or `{:except, tool_names}` for a custom list.
+
   * `:team` - set your Tidewave Team configuration, such as `team: [id: "my-company"]`
 
 ## Available tools
+
+Tidewave supports two common tool profiles:
+
+- `:full` keeps the broad compatibility-oriented tool list documented below.
+- `:minimal` keeps the model-facing surface small. In minimal mode, agents use
+  `project_eval` plus the `Tidewave.Agent` helper facade for logs, SQL, docs,
+  source lookup, component information, routes, and other runtime checks.
+
+For example, in `config/dev.exs`:
+
+```elixir
+config :tidewave, tools_profile: :minimal
+```
+
+Inside `project_eval`, useful helpers include:
+
+```elixir
+Tidewave.Agent.project()
+Tidewave.Agent.logs(tail: 50)
+Tidewave.Agent.sql("select count(*) from users")
+Tidewave.Agent.ecto_schemas()
+Tidewave.Agent.docs(Ecto.Changeset)
+Tidewave.Agent.source(MyApp.Context)
+Tidewave.Agent.component({MyAppWeb.CoreComponents, :button})
+Tidewave.Agent.routes()
+```
 
 ### Core Tools
 
@@ -131,14 +162,13 @@ The following options are available:
 
 - `get_logs` - reads logs written by the server
 
-- `get_models` - lists all modules in the application and their location
-  for quick discovery
-
 - `get_source_location` - get the source location for a given module/function,
   so an agent can directly read the source skipping search
 
 - `project_eval` - evaluates code within the your application itself, giving the agent
-  access to your runtime, dependencies, and in-memory data
+  access to your runtime, dependencies, and in-memory data. In minimal profile,
+  prefer calling `Tidewave.Agent.*` helpers from this tool for logs, SQL, docs,
+  source lookup, components, and route inspection.
 
 - `search_package_docs` - runs a search on https://hexdocs.pm/ filtered to the exact
   dependencies in this project
@@ -155,11 +185,6 @@ The following options are available:
   noise from previous runs. Use this instead of `project_eval` + `get_logs`
   when debugging errors.
 
-- `browser_inspect` - navigates a real headless browser (Lightpanda) to a route
-  and returns structured DOM data. Use this after `smoke_test` passes to verify
-  JavaScript hook execution, console errors, client-side rendering issues, and
-  full DOM structure with source annotations.
-
 ### Structural Code Tools
 
 - `ast_search` - searches Elixir code by AST shape instead of text. Best for
@@ -169,37 +194,6 @@ The following options are available:
   preview matches before applying replacements.
 
 `get_ecto_schemas` and `get_ash_resources` is also available if you are using Ecto and Ash respectively.
-
-## Lightpanda Browser (Optional)
-
-This fork includes support for [Lightpanda](https://lightpanda.io/), a lightweight
-headless browser designed for AI and automation. When installed, Tidewave can
-perform real browser testing of your LiveView applications, including JavaScript
-execution verification.
-
-### Installing Lightpanda
-
-**Linux (x86_64):**
-```bash
-curl -L -o lightpanda https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-x86_64-linux && \
-chmod a+x ./lightpanda && \
-sudo mv ./lightpanda /usr/local/bin/
-```
-
-**macOS (Apple Silicon):**
-```bash
-curl -L -o lightpanda https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-aarch64-macos && \
-chmod a+x ./lightpanda && \
-sudo mv ./lightpanda /usr/local/bin/
-```
-
-**Docker:**
-```bash
-docker run -d --name lightpanda -p 9222:9222 lightpanda/browser:nightly
-```
-
-Lightpanda will be automatically detected and started by Tidewave on port 9222.
-The `browser_inspect` tool will only be available when Lightpanda is running.
 
 ## License
 

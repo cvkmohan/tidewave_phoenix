@@ -22,6 +22,16 @@ defmodule Tidewave.MCP.Tools.Eval do
         It also includes IEx helpers in the evaluation context.
         For example, to get all functions in a module, call
         `exports(String)`.
+
+        Tidewave also exposes a compact eval-friendly helper facade at
+        `Tidewave.Agent`. Prefer it for runtime checks that would otherwise
+        require several specialized tools:
+
+        - `Tidewave.Agent.logs(tail: 50)`
+        - `Tidewave.Agent.sql("select count(*) from users")`
+        - `Tidewave.Agent.docs(Ecto.Changeset)`
+        - `Tidewave.Agent.source(MyApp.Context)`
+        - `Tidewave.Agent.component({MyAppWeb.CoreComponents, :button})`
         """,
         inputSchema: %{
           type: "object",
