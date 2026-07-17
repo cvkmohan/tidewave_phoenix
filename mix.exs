@@ -9,7 +9,7 @@ defmodule Tidewave.MixProject do
     [
       app: :tidewave,
       version: @version,
-      elixir: "~> 1.15",
+      elixir: "~> 1.20",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
@@ -48,24 +48,23 @@ defmodule Tidewave.MixProject do
 
   defp deps do
     [
-      {:plug, "~> 1.17"},
+      {:plug, "~> 1.20"},
       {:jason, "~> 1.4"},
       {:circular_buffer, "~> 0.4 or ~> 1.0"},
-      {:req, "~> 0.5"},
-      {:igniter, "~> 0.6", optional: true},
-      {:phoenix_live_view, "~> 1.0", only: :test},
+      {:req, "~> 0.6"},
+      {:igniter, "~> 0.8", optional: true},
+      {:phoenix_live_view, "~> 1.2", only: :test},
 
       # We require v1.6.1 to detect if phoenix live reload is running too early or late
       {:phoenix_live_reload, ">= 1.6.1", optional: true},
 
       # Code quality and analysis tools (bundled, dev-only analysis — no runtime cost)
-      {:credo, "~> 1.7", runtime: false},
-      {:ex_ast, "~> 0.1", runtime: false},
+      {:ex_ast, "~> 0.12.0", runtime: false},
       {:phoenix_spec, "~> 0.1", runtime: false},
-      {:quickjs_ex, "~> 0.1"},
+      {:quickbeam, "~> 0.10.0"},
 
       # Dev deps
-      {:bandit, "~> 1.10", only: [:dev, :test]},
+      {:bandit, "~> 1.12", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:makeup_syntect, ">= 0.0.0", only: :dev}
     ]

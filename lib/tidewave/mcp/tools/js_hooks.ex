@@ -2,12 +2,12 @@ defmodule Tidewave.MCP.Tools.JsHooks do
   @moduledoc false
 
   def tools do
-    if Code.ensure_loaded?(QuickJSEx) do
+    if Code.ensure_loaded?(QuickBEAM) do
       [
         %{
           name: "eval_js",
           description: """
-          Evaluates JavaScript code in an embedded QuickJS engine with browser stubs.
+          Evaluates JavaScript code in an embedded QuickJS engine with browser APIs.
 
           Runs JS inside the BEAM — no Node.js, no browser needed. Useful for:
           - Testing hook logic
@@ -45,7 +45,7 @@ defmodule Tidewave.MCP.Tools.JsHooks do
   def eval_js(%{"code" => code} = args) do
     load_app = Map.get(args, "load_app_js", false)
 
-    {:ok, rt} = QuickJSEx.start(browser_stubs: true)
+    {:ok, rt} = QuickBEAM.start()
 
     try do
       if load_app do
@@ -55,13 +55,13 @@ defmodule Tidewave.MCP.Tools.JsHooks do
 
           path ->
             case File.read(path) do
-              {:ok, js} -> QuickJSEx.eval(rt, js)
+              {:ok, js} -> QuickBEAM.eval(rt, js)
               _ -> :skip
             end
         end
       end
 
-      case QuickJSEx.eval(rt, code) do
+      case QuickBEAM.eval(rt, code) do
         {:ok, result} ->
           formatted =
             case result do
@@ -72,10 +72,10 @@ defmodule Tidewave.MCP.Tools.JsHooks do
           {:ok, formatted}
 
         {:error, error} ->
-          {:error, "JS error: #{error}"}
+          {:error, "JS error: #{Exception.message(error)}"}
       end
     after
-      QuickJSEx.stop(rt)
+      QuickBEAM.stop(rt)
     end
   end
 
