@@ -16,6 +16,20 @@ You can use this project as a standalone MCP server or integrated with the [Tide
 
 ## Installation
 
+### Using the `cvkmohan` fork
+
+The fork is installed directly from GitHub:
+
+```elixir
+{:tidewave,
+ github: "cvkmohan/tidewave_phoenix",
+ tag: "v0.8.1-cvkmohan.1",
+ only: :dev}
+```
+
+The remaining Phoenix endpoint and MCP client configuration is the same as
+upstream Tidewave.
+
 ### 1. Add the Tidewave hex package to your app
 
 #### Option 1: Manually
@@ -139,6 +153,9 @@ Reads logs written by the server.
 
 Your agent can use it to see what happened after a request. For example, reading the request log and backtrace when something misbehaves.
 
+Pass an ISO 8601 `since` timestamp to scope results to one operation without
+clearing logs that may still be useful to another agent or browser session.
+
 ### `get_source_location`
 
 Get the source location for a given module/function, across both your app and its dependencies.
@@ -204,6 +221,39 @@ The following options are available:
   * `:toolbar` - controls whether the Tidewave toolbar is injected into your HTML pages. Defaults to `true`
 
   * `tmp_dir` - temporary directory Tidewave uses for screenshots and recordings. It must be a relative directory to the current application root. Defaults to `tmp`, storing files under `tmp/tidewave/screenshots` and `tmp/tidewave/recordings`
+
+### Fork extensions
+
+This fork keeps upstream Tidewave behavior as the default and adds a compact
+runtime facade for use through `project_eval`:
+
+```elixir
+Tidewave.Agent.project()
+Tidewave.Agent.logs(tail: 50, since: DateTime.utc_now() |> DateTime.to_iso8601())
+Tidewave.Agent.sql("select count(*) from users")
+Tidewave.Agent.ecto_schemas()
+Tidewave.Agent.docs(Ecto.Changeset)
+Tidewave.Agent.source(MyApp.Context)
+Tidewave.Agent.routes()
+Tidewave.Agent.frontend_status()
+Tidewave.Agent.frontend_check()
+```
+
+The MCP tool surface can be reduced in `config/dev.exs` without replacing
+upstream's browser implementation:
+
+```elixir
+config :tidewave, tools_profile: :minimal
+```
+
+Supported profiles are `:full` (the upstream default), `:minimal`
+(`project_eval` plus upstream `browser_eval`), `{:only, names}`, and
+`{:except, names}`. The `include_browser_tools=false` MCP query parameter still
+controls whether `browser_eval` is exposed for a particular connection.
+
+Prefer upstream `browser_eval` when it is connected. External browser automation
+remains useful for independent verification, durable screenshots or recordings,
+responsive checks, named authentication sessions, and testing Tidewave itself.
 
 ## License
 

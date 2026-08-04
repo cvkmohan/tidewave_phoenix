@@ -78,5 +78,27 @@ defmodule Tidewave.MCP.Tools.LogsTest do
       refute logs =~ "timeout waiting for response"
       refute logs =~ "database connection slow"
     end
+
+    @tag :capture_log
+    test "filters logs by capture time without clearing the shared buffer" do
+      Logger.info("before scoped cutoff")
+      assert {:ok, old_logs} = Logs.get_logs(%{"tail" => 10})
+      assert old_logs =~ "before scoped cutoff"
+
+      cutoff = DateTime.utc_now()
+      Process.sleep(1)
+      Logger.info("after scoped cutoff")
+
+      assert {:ok, logs} =
+               Logs.get_logs(%{"tail" => 10, "since" => DateTime.to_iso8601(cutoff)})
+
+      assert logs =~ "after scoped cutoff"
+      refute logs =~ "before scoped cutoff"
+    end
+
+    test "rejects an invalid since timestamp" do
+      assert {:error, message} = Logs.get_logs(%{"tail" => 10, "since" => "yesterday"})
+      assert message =~ "expected ISO 8601"
+    end
   end
 end

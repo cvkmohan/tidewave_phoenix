@@ -48,6 +48,14 @@ You can customize the rule to match your workflow.
 > If you don't plan to use browser tools, you can set your MCP URL to
 > `/tidewave/mcp?include_browser_tools=false`.
 
+> #### Fork tool profiles {: .info}
+>
+> The `cvkmohan` fork keeps the upstream tool set by default. To expose only
+> `project_eval` and the upstream `browser_eval`, configure
+> `config :tidewave, tools_profile: :minimal`. `{:only, names}` and
+> `{:except, names}` are also supported. The query parameter above still takes
+> precedence for excluding browser tools from a connection.
+
 ## Troubleshooting
 
 This page contains several steps to help debug issues when integrating Tidewave with an editor or MCP client. There are usually three distinct components to investigate:

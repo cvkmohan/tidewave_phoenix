@@ -14,7 +14,8 @@ defmodule Tidewave.MCP.Logger do
     regex = grep && Regex.compile!(grep, "iu")
     level = Keyword.get(opts, :level)
     level_atom = level && Map.fetch!(@levels, level)
-    GenServer.call(__MODULE__, {:get_logs, n, regex, level_atom})
+    since = Keyword.get(opts, :since)
+    GenServer.call(__MODULE__, {:get_logs, n, regex, level_atom, since})
   end
 
   def clear_logs do
@@ -40,29 +41,38 @@ defmodule Tidewave.MCP.Logger do
     # There is a built-in way for MCPs to expose log messages,
     # but we currently don't use it, as the client support isn't really there.
     # https://spec.modelcontextprotocol.io/specification/2024-11-05/server/utilities/logging/
-    cb = CircularBuffer.insert(state.cb, {level, message})
+    cb = CircularBuffer.insert(state.cb, {DateTime.utc_now(), level, message})
 
     {:noreply, %{state | cb: cb}}
   end
 
-  def handle_call({:get_logs, n, regex, level_filter}, _from, state) do
+  def handle_call({:get_logs, n, regex, level_filter, since}, _from, state) do
     logs = CircularBuffer.to_list(state.cb)
 
     logs =
+      if since do
+        Stream.filter(logs, fn {timestamp, _level, _message} ->
+          DateTime.compare(timestamp, since) == :gt
+        end)
+      else
+        logs
+      end
+
+    logs =
       if level_filter do
-        Stream.filter(logs, fn {level, _message} -> level == level_filter end)
+        Stream.filter(logs, fn {_timestamp, level, _message} -> level == level_filter end)
       else
         logs
       end
 
     logs =
       if regex do
-        Stream.filter(logs, fn {_level, message} -> Regex.match?(regex, message) end)
+        Stream.filter(logs, fn {_timestamp, _level, message} -> Regex.match?(regex, message) end)
       else
         logs
       end
 
-    messages = Stream.map(logs, &elem(&1, 1))
+    messages = Stream.map(logs, &elem(&1, 2))
 
     {:reply, Enum.take(messages, -n), state}
   end

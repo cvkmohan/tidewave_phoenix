@@ -1,15 +1,15 @@
 defmodule Tidewave.MixProject do
   use Mix.Project
 
-  @source_url "https://github.com/tidewave-ai/tidewave_phoenix"
+  @source_url "https://github.com/cvkmohan/tidewave_phoenix"
   @homepage_url "https://tidewave.ai/"
-  @version "0.8.1"
+  @version "0.8.1-cvkmohan.1"
 
   def project do
     [
       app: :tidewave,
       version: @version,
-      elixir: "~> 1.15",
+      elixir: "~> 1.20",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),

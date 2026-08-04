@@ -22,6 +22,11 @@ defmodule Tidewave.MCP.Tools.Eval do
         It also includes IEx helpers in the evaluation context.
         For example, to get all functions in a module, call
         `exports(String)`.
+
+        This fork also exposes `Tidewave.Agent` as a compact runtime facade for
+        logs, SQL, schemas, documentation, source locations, routes, and
+        frontend diagnostics. Call those helpers through this tool instead of
+        expanding the permanent MCP tool surface.
         """,
         inputSchema: %{
           type: "object",

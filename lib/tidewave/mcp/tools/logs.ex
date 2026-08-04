@@ -9,6 +9,10 @@ defmodule Tidewave.MCP.Tools.Logs do
         Returns all log output, excluding logs that were caused by other tool calls.
 
         Use this tool to check for request logs or potentially logged errors.
+
+        Pass an ISO 8601 timestamp as `since` to return only logs captured after
+        that point. This scopes diagnostics without clearing logs used by another
+        agent or browser session.
         """,
         inputSchema: %{
           type: "object",
@@ -27,6 +31,10 @@ defmodule Tidewave.MCP.Tools.Logs do
               type: "string",
               enum: ~w(emergency alert critical error warning notice info debug),
               description: "Filter logs by log level (e.g. \"error\" for error logs only)"
+            },
+            since: %{
+              type: "string",
+              description: "Only return logs captured after this ISO 8601 timestamp"
             }
           }
         },
@@ -39,14 +47,27 @@ defmodule Tidewave.MCP.Tools.Logs do
   def get_logs(args) do
     case args do
       %{"tail" => n} ->
-        opts =
-          [grep: Map.get(args, "grep"), level: Map.get(args, "level")]
-          |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+        with {:ok, since} <- parse_since(Map.get(args, "since")) do
+          opts =
+            [grep: Map.get(args, "grep"), level: Map.get(args, "level"), since: since]
+            |> Enum.reject(fn {_k, v} -> is_nil(v) end)
 
-        {:ok, Enum.join(Tidewave.MCP.Logger.get_logs(n, opts), "\n")}
+          {:ok, Enum.join(Tidewave.MCP.Logger.get_logs(n, opts), "\n")}
+        end
 
       _ ->
         {:error, :invalid_arguments}
     end
   end
+
+  defp parse_since(nil), do: {:ok, nil}
+
+  defp parse_since(value) when is_binary(value) do
+    case DateTime.from_iso8601(value) do
+      {:ok, datetime, _offset} -> {:ok, datetime}
+      {:error, _reason} -> {:error, "Invalid `since` timestamp; expected ISO 8601"}
+    end
+  end
+
+  defp parse_since(_value), do: {:error, "Invalid `since` timestamp; expected ISO 8601"}
 end

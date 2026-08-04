@@ -5,6 +5,7 @@ defmodule Tidewave.MCP.Server do
 
   import Plug.Conn
   alias Tidewave.MCP.Tools
+  alias Tidewave.MCP.ToolsProfile
 
   @protocol_version "2025-03-26"
   @vsn Mix.Project.config()[:version]
@@ -32,8 +33,9 @@ defmodule Tidewave.MCP.Server do
 
   @doc false
   def init_tools do
-    tools = raw_tools()
-    browser_tools = browser_tools()
+    profile = Application.get_env(:tidewave, :tools_profile, :full)
+    tools = ToolsProfile.filter(raw_tools(), profile)
+    browser_tools = ToolsProfile.filter(browser_tools(), profile)
     dispatch_map = dispatch_map(tools)
     browser_dispatch_map = dispatch_map(browser_tools)
 

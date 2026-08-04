@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.8.1-cvkmohan.1 (2026-08-04)
+
+* Rebase the fork on the complete upstream Tidewave Phoenix v0.8.1 tree
+* Prefer upstream toolbar, control socket, Connect, and `browser_eval` behavior
+* Add the `Tidewave.Agent` runtime and frontend-diagnostics facade
+* Add configurable tool profiles while retaining upstream browser-tool controls
+* Add non-destructive, time-scoped log retrieval
+* Set the fork project floor to Elixir 1.20
+* Retire the fork's Lightpanda, server-side browser smoke, embedded JavaScript,
+  Hex search, AST replacement, OTP inspection, typespec, xref, and API-spec tools
+
 ## v0.8.1 (2026-07-29)
 
 * Add Tidewave Connect support
