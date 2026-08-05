@@ -19,7 +19,6 @@ defmodule Tidewave.MCP do
     MCP.Server.init_tools()
 
     children = [
-      {Registry, name: Tidewave.BrowserSessions, keys: :unique},
       Tidewave.MCP.Logger,
       Tidewave.MCP.StandardError
     ]
@@ -30,7 +29,6 @@ defmodule Tidewave.MCP do
   @doc """
   Returns the working directory.
   """
-  # TC relies on this function for FS operations. Don't remove!
   def root, do: Application.fetch_env!(:tidewave, :root)
 
   @doc """

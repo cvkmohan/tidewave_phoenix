@@ -3,15 +3,14 @@ defmodule Tidewave.MCP.ToolsProfileTest do
 
   alias Tidewave.MCP.ToolsProfile
 
-  @tools Enum.map(~w(project_eval get_logs browser_eval), &%{name: &1})
+  @tools Enum.map(~w(project_eval get_logs), &%{name: &1})
 
   test "full preserves upstream tools" do
     assert ToolsProfile.filter(@tools, :full) == @tools
   end
 
-  test "minimal keeps project_eval and upstream browser_eval" do
-    assert tool_names(ToolsProfile.filter(@tools, :minimal)) ==
-             ~w(project_eval browser_eval)
+  test "minimal keeps project_eval" do
+    assert tool_names(ToolsProfile.filter(@tools, :minimal)) == ~w(project_eval)
   end
 
   test "only and except accept atom and string names" do
@@ -19,7 +18,7 @@ defmodule Tidewave.MCP.ToolsProfileTest do
              ~w(project_eval get_logs)
 
     assert tool_names(ToolsProfile.filter(@tools, {:except, [:get_logs]})) ==
-             ~w(project_eval browser_eval)
+             ~w(project_eval)
   end
 
   test "unknown profiles preserve upstream tools" do

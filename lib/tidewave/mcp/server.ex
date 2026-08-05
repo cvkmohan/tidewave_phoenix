@@ -23,10 +23,6 @@ defmodule Tidewave.MCP.Server do
     |> List.flatten()
   end
 
-  defp browser_tools do
-    Tools.Browser.tools()
-  end
-
   defp dispatch_map(tools) do
     Map.new(tools, fn tool -> {tool.name, tool.callback} end)
   end
@@ -35,36 +31,25 @@ defmodule Tidewave.MCP.Server do
   def init_tools do
     profile = Application.get_env(:tidewave, :tools_profile, :full)
     tools = ToolsProfile.filter(raw_tools(), profile)
-    browser_tools = ToolsProfile.filter(browser_tools(), profile)
     dispatch_map = dispatch_map(tools)
-    browser_dispatch_map = dispatch_map(browser_tools)
 
     # TODO: switch back to persistent_term when we don't support OTP 27 any more
     # :persistent_term.put({__MODULE__, :tools_and_dispatch}, {tools, dispatch_map})
     :ets.new(:tidewave_tools, [:set, :named_table, read_concurrency: true])
 
-    :ets.insert(
-      :tidewave_tools,
-      {:tools, {tools, dispatch_map, browser_tools, browser_dispatch_map}}
-    )
+    :ets.insert(:tidewave_tools, {:tools, {tools, dispatch_map}})
   end
 
   @doc false
-  def tools_and_dispatch(include_browser_tools?) do
+  def tools_and_dispatch do
     # TODO: switch back to persistent_term when we don't support OTP 27 any more
     # :persistent_term.get({__MODULE__, :tools_and_dispatch})
-    [{:tools, {tools, dispatch_map, browser_tools, browser_dispatch_map}}] =
-      :ets.lookup(:tidewave_tools, :tools)
-
-    if include_browser_tools? do
-      {tools ++ browser_tools, Map.merge(dispatch_map, browser_dispatch_map)}
-    else
-      {tools, dispatch_map}
-    end
+    [{:tools, tools_and_dispatch}] = :ets.lookup(:tidewave_tools, :tools)
+    tools_and_dispatch
   end
 
-  defp tools(include_browser_tools?) do
-    {tools, _} = tools_and_dispatch(include_browser_tools?)
+  defp tools do
+    {tools, _} = tools_and_dispatch()
 
     for tool <- tools do
       tool
@@ -82,8 +67,8 @@ defmodule Tidewave.MCP.Server do
   #   * `{:error, reason}` for any error
   #   * `{:error, reason, new_state}` for any error that should also update the state
   #
-  defp dispatch(name, args, assigns, include_browser_tools?) do
-    {_tools, dispatch} = tools_and_dispatch(include_browser_tools?)
+  defp dispatch(name, args, assigns) do
+    {_tools, dispatch} = tools_and_dispatch()
 
     case dispatch do
       %{^name => callback} when is_function(callback, 2) ->
@@ -127,7 +112,7 @@ defmodule Tidewave.MCP.Server do
      }}
   end
 
-  defp handle_initialize(request_id, params, include_browser_tools?) do
+  defp handle_initialize(request_id, params) do
     case validate_protocol_version(params["protocolVersion"]) do
       :ok ->
         {:ok,
@@ -145,7 +130,7 @@ defmodule Tidewave.MCP.Server do
                name: "Tidewave MCP Server",
                version: @vsn
              },
-             tools: tools(include_browser_tools?)
+             tools: tools()
            }
          }}
 
@@ -154,8 +139,8 @@ defmodule Tidewave.MCP.Server do
     end
   end
 
-  defp handle_list_tools(request_id, _params, include_browser_tools?) do
-    result_or_error(request_id, {:ok, %{tools: tools(include_browser_tools?)}})
+  defp handle_list_tools(request_id, _params) do
+    result_or_error(request_id, {:ok, %{tools: tools()}})
   end
 
   defp handle_list_prompts(request_id, _params) do
@@ -215,13 +200,13 @@ defmodule Tidewave.MCP.Server do
      }}
   end
 
-  defp handle_call_tool(request_id, %{"name" => name} = params, assigns, include_browser_tools?) do
+  defp handle_call_tool(request_id, %{"name" => name} = params, assigns) do
     args = Map.get(params, "arguments", %{})
-    result_or_error(request_id, dispatch(name, args, assigns, include_browser_tools?))
+    result_or_error(request_id, dispatch(name, args, assigns))
   end
 
-  defp safe_call_tool(request_id, params, assigns, include_browser_tools?) do
-    handle_call_tool(request_id, params, assigns, include_browser_tools?)
+  defp safe_call_tool(request_id, params, assigns) do
+    handle_call_tool(request_id, params, assigns)
   catch
     kind, reason ->
       # tool exceptions should be treated as successful response with isError: true
@@ -243,29 +228,17 @@ defmodule Tidewave.MCP.Server do
   end
 
   # Built-in message routing
-  defp handle_message(
-         %{"method" => "notifications/initialized"},
-         _assigns,
-         _include_browser_tools?
-       ) do
+  defp handle_message(%{"method" => "notifications/initialized"}, _assigns) do
     Logger.info("Received initialized notification")
     {:ok, nil}
   end
 
-  defp handle_message(
-         %{"method" => "notifications/" <> _ = method},
-         _assigns,
-         _include_browser_tools?
-       ) do
+  defp handle_message(%{"method" => "notifications/" <> _ = method}, _assigns) do
     Logger.debug("Ignoring notification: #{method}")
     {:ok, nil}
   end
 
-  defp handle_message(
-         %{"method" => method, "id" => id} = message,
-         assigns,
-         include_browser_tools?
-       ) do
+  defp handle_message(%{"method" => method, "id" => id} = message, assigns) do
     Logger.info("Routing MCP message: #{method} (id=#{id})")
     Logger.debug("Full message: #{inspect(message, pretty: true)}")
 
@@ -278,17 +251,17 @@ defmodule Tidewave.MCP.Server do
           "Handling initialize request with params: #{inspect(message["params"], pretty: true)}"
         )
 
-        handle_initialize(id, message["params"], include_browser_tools?)
+        handle_initialize(id, message["params"])
 
       "tools/list" ->
-        handle_list_tools(id, message["params"], include_browser_tools?)
+        handle_list_tools(id, message["params"])
 
       "tools/call" ->
         Logger.debug(
           "Handling tool call request with params: #{inspect(message["params"], pretty: true)}"
         )
 
-        safe_call_tool(id, message["params"], assigns, include_browser_tools?)
+        safe_call_tool(id, message["params"], assigns)
 
       "prompts/list" ->
         handle_list_prompts(id, message["params"])
@@ -371,13 +344,11 @@ defmodule Tidewave.MCP.Server do
   def handle_http_message(conn) do
     Logger.info("Received #{conn.method} message")
     params = conn.body_params
-    conn = fetch_query_params(conn)
-    include_browser_tools? = conn.query_params["include_browser_tools"] != "false"
     Logger.debug("Raw params: #{inspect(params, pretty: true)}")
 
     case validate_jsonrpc_message(params) do
       {:ok, message} ->
-        case handle_message(message, conn.private.tidewave_config, include_browser_tools?) do
+        case handle_message(message, conn.private.tidewave_config) do
           {:ok, nil} ->
             # Notifications that don't return a response
             conn |> put_status(202) |> send_json(%{status: "ok"})

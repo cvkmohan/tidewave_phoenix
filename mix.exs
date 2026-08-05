@@ -2,8 +2,8 @@ defmodule Tidewave.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/cvkmohan/tidewave_phoenix"
-  @homepage_url "https://tidewave.ai/"
-  @version "0.8.1-cvkmohan.1"
+  @homepage_url "https://github.com/cvkmohan/tidewave_phoenix"
+  @version "0.8.1"
 
   def project do
     [
@@ -53,15 +53,8 @@ defmodule Tidewave.MixProject do
       {:circular_buffer, "~> 0.4 or ~> 1.0"},
       {:igniter, "~> 0.6", optional: true},
 
-      # Required for the browser control page to upgrade /tidewave/ws to a
-      # plain WebSocket. Works with both Bandit and Plug.Cowboy.
-      {:websock_adapter, "~> 0.5"},
-
       # We require v1.6.1 to detect if phoenix live reload is running too early or late
       {:phoenix_live_reload, ">= 1.6.1", optional: true},
-
-      # We require 2.9 for get_sock_data
-      {:plug_cowboy, "~> 2.9", optional: true},
 
       # Dev deps
       {:bandit, "~> 1.10", only: [:dev, :test]},
@@ -73,7 +66,7 @@ defmodule Tidewave.MixProject do
   defp docs do
     [
       api_reference: false,
-      main: "welcome",
+      main: "readme",
       logo: "logo.svg",
       footer: false,
       assets: %{"pages/assets" => "assets"},
@@ -81,30 +74,7 @@ defmodule Tidewave.MixProject do
         raise "you forgot to add \"@moduledoc false\" to #{inspect(mod)}"
       end,
       extras: [
-        "pages/welcome.md",
-        "pages/ide/installation.md",
-        "pages/ide/browser_app.md",
-        "pages/ide/code_review.md",
-        "pages/ide/containers.md",
-        "pages/ide/custom_domains.md",
-        "pages/ide/figma.md",
-        "pages/ide/git.md",
-        "pages/ide/https.md",
-        "pages/ide/mermaid.md",
-        "pages/ide/notifications.md",
-        "pages/ide/providers.md",
-        "pages/ide/remote_access.md",
-        "pages/ide/spaces.md",
-        "pages/ide/task_board.md",
-        "pages/ide/voice_input.md",
-        "pages/features/accessibility.md",
-        "pages/features/connect.md",
-        "pages/features/inspector.md",
-        "pages/features/ui_variants.md",
-        "pages/features/vision_mode.md",
-        "pages/references/editors.md",
-        "pages/references/frontend.md",
-        "pages/references/teams.md",
+        "README.md",
         "pages/references/security.md",
         "pages/mcp/mcp.md",
         "pages/mcp/mcp_claude_code.md",
@@ -115,17 +85,13 @@ defmodule Tidewave.MixProject do
         "pages/mcp/mcp_vscode.md"
       ],
       groups_for_extras: [
-        Welcome: "pages/welcome.md",
-        Tidewave: ~r/(pages\/features\/.?)/,
+        Welcome: "README.md",
         "Tidewave MCP": ~r/pages\/mcp\/.?/,
-        "Tidewave IDE": ~r/(pages\/ide\/.?)/,
         References: ~r/(pages\/references\/.?)/
       ],
       redirects: %{
-        "react" => "frontend",
-        "vue" => "frontend",
         "mcp_troubleshooting" => "mcp",
-        "subdomains" => "custom_domains"
+        "subdomains" => "mcp"
       },
       before_closing_head_tag: fn _ ->
         # Hide version nodes to avoid confusion between TidewaveApp and TidewavePhoenix.

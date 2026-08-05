@@ -3,7 +3,7 @@ defmodule Tidewave.MCP.ToolsProfile do
 
   require Logger
 
-  @minimal_tool_names MapSet.new(~w(project_eval browser_eval))
+  @minimal_tool_names MapSet.new(~w(project_eval))
 
   @doc false
   def filter(tools, profile)
