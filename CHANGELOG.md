@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.9.2 (2026-10-28)
+
+* Port upstream Tidewave Phoenix v0.9.2 by hand (fork point v0.8.1, `ccd3b9d`)
+  * `8dbb44e`: split the MCP core from HTTP into `Tidewave.MCP.Handler` and `Tidewave.MCP.HTTP`
+  * `6f7272d`: add `Tidewave.MCP.Stdio` and `mix tidewave.proxy` (a required `port` argument on every tool)
+  * `6107915`: add MCP server `instructions`, rewritten for the fork's five tools
+  * `8015953`: check the `Host` header against DNS rebinding and add the `:allowed_origins` option; requests carrying an `Origin` header are still rejected
+* Make `execute_sql_query` read-only: it runs in a read-only transaction that is always rolled back, and only PostgreSQL repos are supported (other adapters are refused)
+* Remove the Ash tool, `get_ecto_schemas`, tool profiles, and `Tidewave.Agent.frontend_status/0`, `frontend_check/1`, `ecto_schemas/0` and `ash_resources/0`
+* Do not port the toolbar, `browser_eval`, `create_design_canvas`, request silencing, CSP rewriting or the remote docs
+* Update the lockfile to current versions; rewrite `docs/fork-v0.8.1-integration.md` as `docs/fork.md`
+
 ## v0.8.1-cvkmohan.1 (2026-08-04)
 
 * Rebase the fork on the complete upstream Tidewave Phoenix v0.8.1 tree
