@@ -16,7 +16,7 @@ defmodule Tidewave.MCP do
     add_logger_backend()
     init_config()
 
-    MCP.Server.init_tools()
+    MCP.Handler.init_tools()
 
     children = [
       Tidewave.MCP.Logger,
@@ -41,7 +41,7 @@ defmodule Tidewave.MCP do
       :ok
     else
       Logger.put_module_level(MCP.Connection, :none)
-      Logger.put_module_level(MCP.Server, :none)
+      Logger.put_module_level(MCP.Handler, :none)
     end
   end
 

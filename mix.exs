@@ -3,7 +3,7 @@ defmodule Tidewave.MixProject do
 
   @source_url "https://github.com/cvkmohan/tidewave_phoenix"
   @homepage_url "https://github.com/cvkmohan/tidewave_phoenix"
-  @version "0.8.1"
+  @version "0.9.2"
 
   def project do
     [
@@ -58,6 +58,8 @@ defmodule Tidewave.MixProject do
 
       # Dev deps
       {:bandit, "~> 1.10", only: [:dev, :test]},
+      {:ecto_sql, "~> 3.12", only: :test},
+      {:postgrex, "~> 0.19", only: :test},
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:makeup_syntect, ">= 0.0.0", only: :dev}
     ]

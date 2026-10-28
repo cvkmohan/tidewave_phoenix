@@ -1,7 +1,6 @@
 defmodule Tidewave.MCP.Tools.Ecto do
   @moduledoc false
 
-  alias Tidewave.MCP.Tools.Source
   @limit 50
 
   def tools do
@@ -24,7 +23,10 @@ defmodule Tidewave.MCP.Tools.Ecto do
           perform additional calls using LIMIT and OFFSET in the query. If you know that only
           specific columns are relevant, only include those in the SELECT clause.
 
-          You can use this tool to introspect the database, select and manipulate user data.
+          This tool is read-only: the query runs in a read-only transaction that is always
+          rolled back, so INSERT, UPDATE, DELETE and DDL statements fail. Use it to introspect
+          the database and select data. Make changes through the application code instead.
+          Only PostgreSQL repositories are supported.
           Keep in mind data is returned in a low-level representation. For example, UUIDs are
           16-byte binaries. If you run into issues, you may want to cast them, such as `id::text`
           in PostgreSQL or using `BIN_TO_UUID(column)` on databases like MySQL.
@@ -63,22 +65,6 @@ defmodule Tidewave.MCP.Tools.Ecto do
             }
           },
           callback: &execute_sql_query/2
-        },
-        %{
-          name: "get_ecto_schemas",
-          description: """
-          Lists all Ecto schema modules and their file path in the current project.
-
-          Use this tool to get an overview of available schemas if the project uses Ecto.
-          You should prefer this tool over grepping the file system when you need to find a specific schema.
-          """,
-          inputSchema: %{
-            type: "object",
-            required: [],
-            properties: %{}
-          },
-          annotations: %{readOnlyHint: true},
-          callback: &get_ecto_schemas/1
         }
       ]
     else
@@ -93,7 +79,7 @@ defmodule Tidewave.MCP.Tools.Ecto do
         repo -> Module.concat([repo])
       end
 
-    case repo.query(query, args["arguments"] || []) do
+    case read_only_query(repo, query, args["arguments"] || []) do
       {:ok, result} ->
         {preamble, result} =
           case result do
@@ -112,43 +98,49 @@ defmodule Tidewave.MCP.Tools.Ecto do
         inspect_opts = Keyword.put(assigns.inspect_opts, :limit, :infinity)
         {:ok, preamble <> inspect(result, inspect_opts)}
 
+      {:error, :unsupported_adapter} ->
+        {:error,
+         "execute_sql_query is read-only and can only guarantee that on PostgreSQL. " <>
+           "#{inspect(repo)} uses #{inspect(repo.__adapter__())}, so the query was not run."}
+
       {:error, reason} ->
-        {:error, "Failed to execute query: #{inspect(reason, assigns.inspect_opts)}"}
+        {:error,
+         "Failed to execute query: #{inspect(reason, assigns.inspect_opts)}" <> hint(reason)}
     end
   end
+
+  # Runs the query in a read-only transaction that is always rolled back.
+  #
+  # The `SELECT 1` takes the transaction snapshot: until then, Postgres still
+  # lets a query switch the transaction back with `SET TRANSACTION READ WRITE`.
+  defp read_only_query(repo, query, arguments) do
+    if repo.__adapter__() == Ecto.Adapters.Postgres do
+      outcome =
+        repo.transaction(fn ->
+          with {:ok, _} <- repo.query("SET TRANSACTION READ ONLY", []),
+               {:ok, _} <- repo.query("SELECT 1", []) do
+            repo.rollback({:tidewave_result, repo.query(query, arguments)})
+          else
+            error -> repo.rollback({:tidewave_result, error})
+          end
+        end)
+
+      case outcome do
+        {:error, {:tidewave_result, result}} -> result
+        {:error, reason} -> {:error, reason}
+      end
+    else
+      {:error, :unsupported_adapter}
+    end
+  end
+
+  defp hint(%{postgres: %{code: :read_only_sql_transaction}}),
+    do: "\n\nexecute_sql_query is read-only: writes are not allowed."
+
+  defp hint(_), do: ""
 
   def execute_sql_query(_) do
     {:error, :invalid_arguments}
-  end
-
-  def get_ecto_schemas(_args) do
-    schemas =
-      for module <- project_modules(),
-          Code.ensure_loaded?(module),
-          function_exported?(module, :__changeset__, 0) do
-        location =
-          case Source.get_source_location(%{"reference" => inspect(module)}) do
-            {:ok, source_location} -> " at #{source_location}"
-            _ -> ""
-          end
-
-        spark_context = spark_is_context(module)
-
-        "* #{inspect(module)}#{location}#{spark_context}"
-      end
-
-    case schemas do
-      [] -> {:error, "No Ecto schemas found in the project"}
-      schemas -> {:ok, Enum.join(schemas, "\n")}
-    end
-  end
-
-  defp spark_is_context(module) do
-    if function_exported?(module, :spark_is, 0) do
-      " (#{inspect(module.spark_is())})"
-    else
-      ""
-    end
   end
 
   defp apps do
@@ -176,20 +168,5 @@ defmodule Tidewave.MCP.Tools.Ecto do
 
   defp repos_configured? do
     ecto_repos() != []
-  end
-
-  defp project_modules do
-    build_path = Mix.Project.build_path()
-
-    files =
-      apps()
-      |> Enum.flat_map(fn app ->
-        File.ls!(Path.join(build_path, "lib/#{app}/ebin"))
-      end)
-      |> :lists.usort()
-
-    for file <- files, [basename, ""] <- [:binary.split(file, ".beam")] do
-      String.to_atom(basename)
-    end
   end
 end

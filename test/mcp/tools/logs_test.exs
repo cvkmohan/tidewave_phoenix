@@ -82,7 +82,7 @@ defmodule Tidewave.MCP.Tools.LogsTest do
     @tag :capture_log
     test "filters logs by capture time without clearing the shared buffer" do
       Logger.info("before scoped cutoff")
-      assert {:ok, old_logs} = Logs.get_logs(%{"tail" => 10})
+      assert {:ok, old_logs} = Logs.get_logs(%{"tail" => 10, "grep" => "scoped cutoff"})
       assert old_logs =~ "before scoped cutoff"
 
       cutoff = DateTime.utc_now()
@@ -90,7 +90,11 @@ defmodule Tidewave.MCP.Tools.LogsTest do
       Logger.info("after scoped cutoff")
 
       assert {:ok, logs} =
-               Logs.get_logs(%{"tail" => 10, "since" => DateTime.to_iso8601(cutoff)})
+               Logs.get_logs(%{
+                 "tail" => 10,
+                 "grep" => "scoped cutoff",
+                 "since" => DateTime.to_iso8601(cutoff)
+               })
 
       assert logs =~ "after scoped cutoff"
       refute logs =~ "before scoped cutoff"

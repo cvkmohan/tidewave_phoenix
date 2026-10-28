@@ -1,4 +1,4 @@
-defmodule Tidewave.MCP.ServerTest do
+defmodule Tidewave.MCP.HTTPTest do
   use ExUnit.Case, async: true
   import Plug.Test
   import Plug.Conn
@@ -25,7 +25,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Tidewave.MCP.HTTP.run(conn)
 
       assert response.status == 200
       response_body = Jason.decode!(response.resp_body)
@@ -43,7 +43,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Tidewave.MCP.HTTP.run(conn)
 
       assert response.status == 202
       assert response.resp_body == "{\"status\":\"ok\"}"
@@ -57,7 +57,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Tidewave.MCP.HTTP.run(conn)
 
       assert response.status == 202
       assert response.resp_body == "{\"status\":\"ok\"}"
@@ -70,7 +70,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Tidewave.MCP.HTTP.run(conn)
 
       assert response.status == 202
       assert response.resp_body == "{\"status\":\"ok\"}"
@@ -84,7 +84,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Tidewave.MCP.HTTP.run(conn)
 
       assert response.status == 200
       response_body = Jason.decode!(response.resp_body)
@@ -100,7 +100,7 @@ defmodule Tidewave.MCP.ServerTest do
       log =
         capture_log([level: :warning], fn ->
           conn = %{conn | body_params: message}
-          response = Tidewave.MCP.Server.handle_http_message(conn)
+          response = Tidewave.MCP.HTTP.run(conn)
 
           assert response.status == 200
           response_body = Jason.decode!(response.resp_body)
@@ -123,7 +123,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Tidewave.MCP.HTTP.run(conn)
 
       assert response.status == 200
       response_body = Jason.decode!(response.resp_body)
@@ -140,7 +140,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Tidewave.MCP.HTTP.run(conn)
 
       assert response.status == 200
       response_body = Jason.decode!(response.resp_body)
@@ -155,7 +155,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Tidewave.MCP.HTTP.run(conn)
 
       assert response.status == 200
       response_body = Jason.decode!(response.resp_body)
@@ -170,7 +170,7 @@ defmodule Tidewave.MCP.ServerTest do
       }
 
       conn = %{conn | body_params: message}
-      response = Tidewave.MCP.Server.handle_http_message(conn)
+      response = Tidewave.MCP.HTTP.run(conn)
 
       assert response.status == 200
       response_body = Jason.decode!(response.resp_body)

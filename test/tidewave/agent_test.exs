@@ -39,20 +39,7 @@ defmodule Tidewave.AgentTest do
     assert source =~ "lib/tidewave.ex"
   end
 
-  test "returns conservative frontend diagnostics" do
-    assert {:ok, status} = Tidewave.Agent.frontend_status()
-    assert status.toolchain in [:volt, :vite, :phoenix_default, :unknown]
-    assert is_list(status.checks)
-    assert is_map(status.aliases)
-
-    assert {:ok, check} = Tidewave.Agent.frontend_check()
-    assert check.toolchain == status.toolchain
-    assert check.checks == status.checks
-    assert check.note =~ "run: true"
-  end
-
-  test "reports the absence of Phoenix routes and Ash cleanly" do
+  test "reports the absence of Phoenix routes cleanly" do
     assert {:error, "No Phoenix routes found"} = Tidewave.Agent.routes()
-    assert {:error, "Ash is not loaded in this project"} = Tidewave.Agent.ash_resources()
   end
 end

@@ -8,7 +8,7 @@ defmodule Tidewave.MCP.Tools.EctoTest do
       assert tools = Ecto.tools()
       assert execute_sql_query = Enum.find(tools, &(&1.name == "execute_sql_query"))
       assert execute_sql_query.inputSchema.properties.repo.description =~ "MockRepo"
-      assert Enum.find(tools, &(&1.name == "get_ecto_schemas"))
+      refute Enum.find(tools, &(&1.name == "get_ecto_schemas"))
     end
   end
 
@@ -110,26 +110,85 @@ defmodule Tidewave.MCP.Tools.EctoTest do
     end
   end
 
-  describe "get_ecto_schemas/1" do
-    test "returns list of Ecto schema modules and their file path" do
-      assert {:error, "No Ecto schemas found in the project"} = Ecto.get_ecto_schemas(%{})
+  describe "read-only enforcement" do
+    @repo "Tidewave.TestRepo"
 
-      {:module, _, bin, _} =
-        defmodule Elixir.TestSchema do
-          def __changeset__ do
-            %{}
-          end
-        end
+    setup do
+      Tidewave.TestRepo.query!("DROP TABLE IF EXISTS tidewave_ro_test")
+      Tidewave.TestRepo.query!("CREATE TABLE tidewave_ro_test (id int PRIMARY KEY, name text)")
+      Tidewave.TestRepo.query!("INSERT INTO tidewave_ro_test VALUES (1, 'one')")
+      on_exit(fn -> Tidewave.TestRepo.query!("DROP TABLE IF EXISTS tidewave_ro_test") end)
+    end
 
-      compile_path = Mix.Project.compile_path()
-      File.write!("#{compile_path}/Elixir.TestSchema.beam", bin)
+    defp run(query, arguments \\ []) do
+      Ecto.execute_sql_query(
+        %{"repo" => @repo, "query" => query, "arguments" => arguments},
+        Tidewave.init([])
+      )
+    end
 
-      on_exit(fn ->
-        File.rm("#{compile_path}/Elixir.TestSchema.beam")
-      end)
+    defp rows,
+      do: Tidewave.TestRepo.query!("SELECT id, name FROM tidewave_ro_test ORDER BY id").rows
 
-      {:ok, text} = Ecto.get_ecto_schemas(%{})
-      assert text == "* TestSchema at test/mcp/tools/ecto_test.exs"
+    test "a SELECT works" do
+      assert {:ok, text} = run("SELECT name FROM tidewave_ro_test WHERE id = $1", [1])
+      assert text =~ ~s|rows: [["one"]]|
+    end
+
+    test "writes fail with a read-only message and persist nothing" do
+      for query <- [
+            "INSERT INTO tidewave_ro_test VALUES (2, 'two')",
+            "UPDATE tidewave_ro_test SET name = 'changed'",
+            "DELETE FROM tidewave_ro_test",
+            "CREATE TABLE tidewave_ro_other (id int)",
+            "ALTER TABLE tidewave_ro_test ADD COLUMN extra int",
+            "DROP TABLE tidewave_ro_test",
+            "TRUNCATE tidewave_ro_test"
+          ] do
+        assert {:error, message} = run(query)
+        assert message =~ "Failed to execute query"
+        assert message =~ "read-only", "no read-only hint for #{query}"
+      end
+
+      assert rows() == [[1, "one"]]
+
+      assert {:ok, %{rows: [[nil]]}} =
+               Tidewave.TestRepo.query("SELECT to_regclass('tidewave_ro_other')")
+    end
+
+    test "SET TRANSACTION READ WRITE cannot lift the restriction" do
+      assert {:error, _} = run("SET TRANSACTION READ WRITE")
+      assert {:error, _} = run("SET transaction_read_only = off")
+      assert {:error, _} = run("SELECT set_config('transaction_read_only', 'off', true)")
+      assert {:error, message} = run("SELECT nextval('tidewave_ro_missing_seq')")
+      assert message =~ "Failed to execute query"
+      assert rows() == [[1, "one"]]
+    end
+
+    test "COMMIT and ROLLBACK statements persist nothing" do
+      run("COMMIT")
+      run("ROLLBACK")
+      run("INSERT INTO tidewave_ro_test VALUES (3, 'three')")
+      assert rows() == [[1, "one"]]
+    end
+
+    test "the repo is usable for writes outside the tool afterwards" do
+      run("SELECT 1")
+      Tidewave.TestRepo.query!("INSERT INTO tidewave_ro_test VALUES (4, 'four')")
+      assert length(rows()) == 2
+    end
+  end
+
+  describe "adapters other than PostgreSQL" do
+    test "are refused without running the query" do
+      assert {:error, message} =
+               Ecto.execute_sql_query(
+                 %{"repo" => "MockMySQLRepo", "query" => "SELECT 1"},
+                 Tidewave.init([])
+               )
+
+      assert message =~ "read-only"
+      assert message =~ "MockMySQLRepo"
     end
   end
 end
