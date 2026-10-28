@@ -23,10 +23,13 @@ defmodule Tidewave.MCP.Tools.Eval do
         For example, to get all functions in a module, call
         `exports(String)`.
 
-        This fork also exposes `Tidewave.Agent` as a compact runtime facade for
-        logs, SQL, schemas, documentation, source locations, routes, and
-        frontend diagnostics. Call those helpers through this tool instead of
-        expanding the permanent MCP tool surface.
+        This fork also exposes `Tidewave.Agent` as a compact runtime facade:
+        `project/0`, `logs/1`, `clear_logs/0`, `sql/2` (read-only), `docs/1`,
+        `source/1` and `routes/1`. Call those helpers through this tool instead
+        of expanding the permanent MCP tool surface.
+
+        Use this tool to inspect live state only. Never use it to write data;
+        make code changes with file edits.
         """,
         inputSchema: %{
           type: "object",

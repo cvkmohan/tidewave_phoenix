@@ -66,6 +66,11 @@ worktree's running app. In `.mcp.json`:
 {"mcpServers": {"tidewave": {"command": "mix", "args": ["tidewave.proxy"]}}}
 ```
 
+The stdio entry must run from the application's root (the directory that holds
+`.mcp.json`), not from the fork or any other directory. The proxy loads that
+app's `ecto_repos` to decide whether to advertise `execute_sql_query`; from
+another directory the SQL tool is missing from the tool list.
+
 ## Local agent facade
 
 The facade is invoked through `project_eval`:

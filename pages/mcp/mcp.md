@@ -25,6 +25,11 @@ running on `127.0.0.1:<port>`. Every tool gets a required `port` argument.
 {"mcpServers": {"tidewave": {"command": "mix", "args": ["tidewave.proxy"]}}}
 ```
 
+The stdio entry must run from the application's root (the directory that holds
+`.mcp.json`), not from the fork or any other directory. The proxy loads that
+app's `ecto_repos` to decide whether to advertise `execute_sql_query`; from
+another directory the SQL tool is missing from the tool list.
+
 ## Security
 
 The endpoint has no authentication. It accepts loopback connections only by
